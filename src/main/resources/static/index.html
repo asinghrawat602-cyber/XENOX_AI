@@ -1,0 +1,702 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XENOX — AI Mail Intelligence</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #070611;
+            --panel: rgba(19, 16, 39, .82);
+            --border: rgba(174, 147, 255, .16);
+            --purple: #9167ff;
+            --purple-light: #b59aff;
+            --text: #f5f1ff;
+            --muted: #9991b5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: -30%;
+            z-index: -2;
+            background:
+                    radial-gradient(circle at 20% 20%, rgba(116, 65, 255, .23), transparent 32%),
+                    radial-gradient(circle at 80% 30%, rgba(36, 108, 255, .15), transparent 30%),
+                    radial-gradient(circle at 55% 85%, rgba(172, 65, 255, .15), transparent 35%);
+            animation: aurora 14s ease-in-out infinite alternate;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            opacity: .12;
+            background-image:
+                    linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none;
+        }
+
+        @keyframes aurora {
+            from { transform: translate(-2%, -1%) scale(1); }
+            to { transform: translate(2%, 2%) scale(1.12); }
+        }
+
+        button, input, textarea {
+            font: inherit;
+        }
+
+        .top-line {
+            height: 3px;
+            background: linear-gradient(90deg, #6941ff, #b16cff, #4c9dff, #6941ff);
+            background-size: 200%;
+            animation: shine 5s linear infinite;
+        }
+
+        @keyframes shine {
+            to { background-position: 200% center; }
+        }
+
+        .container {
+            width: min(1180px, calc(100% - 40px));
+            margin: auto;
+        }
+
+        header {
+            height: 82px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,.07);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 23px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #ffffff;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #865cff, #4d39ba);
+            box-shadow: 0 0 25px rgba(133, 92, 255, .4);
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            color: #bdb5d5;
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #28dba0;
+            border-radius: 50%;
+            box-shadow: 0 0 12px #28dba0;
+        }
+
+        .hero {
+            padding: 65px 0 42px;
+            text-align: center;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 8px 15px;
+            border: 1px solid rgba(157, 119, 255, .3);
+            border-radius: 30px;
+            color: #c3aaff;
+            background: rgba(124, 83, 255, .09);
+            font-size: 11px;
+            letter-spacing: 2px;
+            margin-bottom: 22px;
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(36px, 6vw, 64px);
+            line-height: 1.08;
+            letter-spacing: -2px;
+        }
+
+        h1 span {
+            background: linear-gradient(100deg, #a88aff, #e2b4ff, #7c9dff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero p {
+            max-width: 590px;
+            margin: 18px auto 0;
+            color: var(--muted);
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+            padding-bottom: 65px;
+        }
+
+        .panel {
+            min-width: 0;
+            padding: 27px;
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            background: var(--panel);
+            backdrop-filter: blur(22px);
+            box-shadow: 0 20px 70px rgba(0,0,0,.25);
+        }
+
+        .panel-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 26px;
+        }
+
+        .panel-heading h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 19px;
+        }
+
+        .panel-tag {
+            color: #b59aff;
+            font-size: 10px;
+            letter-spacing: 1.5px;
+        }
+
+        .field {
+            margin-bottom: 19px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 9px;
+            color: #c9c1dd;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .5px;
+        }
+
+        input, textarea {
+            width: 100%;
+            border: 1px solid rgba(171, 151, 221, .17);
+            outline: none;
+            border-radius: 12px;
+            background: rgba(5, 4, 17, .65);
+            color: #f5f1ff;
+            padding: 14px 15px;
+            font-size: 13px;
+            transition: .25s;
+        }
+
+        input {
+            height: 48px;
+        }
+
+        textarea {
+            min-height: 130px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: #69627f;
+        }
+
+        input:focus, textarea:focus {
+            border-color: rgba(155, 115, 255, .8);
+            box-shadow: 0 0 0 3px rgba(130, 85, 255, .1);
+        }
+
+        .primary-btn {
+            width: 100%;
+            min-height: 54px;
+            border: 0;
+            border-radius: 13px;
+            color: white;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            background: linear-gradient(105deg, #7046e9, #a15cff, #6256e9);
+            box-shadow: 0 8px 28px rgba(119, 77, 255, .25);
+            transition: .25s;
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(119, 77, 255, .4);
+        }
+
+        .primary-btn:disabled {
+            opacity: .6;
+            cursor: wait;
+            transform: none;
+        }
+
+        .preview-area {
+            min-height: 340px;
+            padding: 19px;
+            border: 1px solid rgba(171, 151, 221, .13);
+            border-radius: 14px;
+            background: rgba(5, 4, 17, .55);
+            color: #e5def5;
+            font-size: 13px;
+            line-height: 1.85;
+            outline: none;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .preview-area:focus {
+            border-color: rgba(155, 115, 255, .7);
+        }
+
+        .preview-area:empty::before {
+            content: "Your AI-generated email will appear here...";
+            color: #69627f;
+        }
+
+        .preview-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 11px;
+            margin-top: 17px;
+        }
+
+        .secondary-btn {
+            flex: 1 1 0;
+            min-height: 47px;
+            padding: 0 15px;
+            border: 1px solid rgba(171, 151, 221, .2);
+            border-radius: 12px;
+            color: #dcd4f2;
+            background: rgba(255,255,255,.035);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: .7px;
+            cursor: pointer;
+            transition: .25s;
+        }
+
+        .secondary-btn:hover {
+            border-color: rgba(170, 132, 255, .65);
+            background: rgba(137, 94, 255, .12);
+            transform: translateY(-2px);
+        }
+
+        .send-btn {
+            flex: 1 1 100% !important;
+            min-height: 66px;
+            margin-top: 8px;
+            border: 1px solid rgba(113, 255, 202, .28);
+            border-radius: 15px;
+            color: #ffffff;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            background: linear-gradient(105deg, #087c62, #159c83 48%, #6950d9);
+            box-shadow:
+                    0 8px 30px rgba(21, 190, 142, .18),
+                    0 0 24px rgba(125, 86, 255, .12);
+            transition: all .3s ease;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-3px);
+            background: linear-gradient(105deg, #0b9875, #20b997 48%, #8465f5);
+            box-shadow:
+                    0 13px 38px rgba(21, 190, 142, .28),
+                    0 0 32px rgba(125, 86, 255, .2);
+        }
+
+        .send-btn:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .preview-actions .send-btn {
+            order: 3;
+        }
+
+        .message {
+            min-height: 20px;
+            margin-top: 13px;
+            color: #a99fc4;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .message.error {
+            color: #ff8e9b;
+        }
+
+        .message.success {
+            color: #55e6b2;
+        }
+
+        footer {
+            padding: 25px 0;
+            border-top: 1px solid rgba(255,255,255,.07);
+            color: #77708e;
+            text-align: center;
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 800px) {
+            .workspace {
+                grid-template-columns: 1fr;
+            }
+
+            .hero {
+                padding-top: 48px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                width: min(100% - 24px, 1180px);
+            }
+
+            .panel {
+                padding: 19px;
+            }
+
+            .brand {
+                font-size: 18px;
+            }
+
+            .status {
+                font-size: 9px;
+            }
+
+            .preview-actions .secondary-btn:not(.send-btn) {
+                flex: 1 1 100%;
+            }
+
+            .send-btn {
+                min-height: 60px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="top-line"></div>
+
+<div class="container">
+    <header>
+        <div class="brand">
+            <div class="brand-icon">✦</div>
+            XENOX
+        </div>
+
+        <div class="status">
+            <span class="status-dot"></span>
+            AI MAIL INTELLIGENCE
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="eyebrow">NEXT-GENERATION EMAIL INTELLIGENCE</div>
+        <h1>Words that work.<br><span>Powered by intelligence.</span></h1>
+        <p>
+            Create professional emails with AI precision.
+            Describe what you want to say, refine your message,
+            and prepare it to send.
+        </p>
+    </section>
+
+    <main class="workspace">
+        <section class="panel">
+            <div class="panel-heading">
+                <h2>Compose Email</h2>
+                <span class="panel-tag">01 / COMPOSE</span>
+            </div>
+
+            <form id="emailForm">
+                <div class="field">
+                    <label for="sender">SENDER GMAIL</label>
+                    <input id="sender" type="email"
+                           placeholder="yourname@gmail.com" required>
+                </div>
+
+                <div class="field">
+                    <label for="recipient">RECIPIENT GMAIL</label>
+                    <input id="recipient" type="email"
+                           placeholder="recipient@gmail.com" required>
+                </div>
+
+                <div class="field">
+                    <label for="subject">EMAIL SUBJECT</label>
+                    <input id="subject" type="text"
+                           placeholder="Enter your subject..." required>
+                </div>
+
+                <div class="field">
+                    <label for="information">INSTRUCTIONS / INFORMATION</label>
+                    <textarea id="information"
+                              placeholder="Describe what the email should communicate. Include the key points, purpose, and tone..."
+                              required></textarea>
+                </div>
+
+                <button class="primary-btn" id="generateBtn" type="submit">
+                    ✦ &nbsp; GENERATE WITH AI &nbsp; →
+                </button>
+
+                <div class="message" id="generateMessage" aria-live="polite"></div>
+            </form>
+        </section>
+
+        <section class="panel">
+            <div class="panel-heading">
+                <h2>Email Preview</h2>
+                <span class="panel-tag">02 / PREVIEW</span>
+            </div>
+
+            <div class="preview-area"
+                 id="emailPreview"
+                 contenteditable="true"
+                 spellcheck="true"></div>
+
+            <div class="preview-actions">
+                <button class="secondary-btn" id="copyBtn" type="button">
+                    ▣ &nbsp; COPY
+                </button>
+
+                <button class="secondary-btn" id="regenerateBtn" type="button">
+                    ↻ &nbsp; REGENERATE
+                </button>
+
+                <button class="secondary-btn send-btn" id="sendBtn" type="button">
+                    ✉ &nbsp; SEND GMAIL &nbsp; →
+                </button>
+            </div>
+
+            <div class="message" id="sendMessage" aria-live="polite">
+                Generated content will be editable here.
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        XENOX &nbsp; • &nbsp; INTELLIGENCE REDEFINED
+    </footer>
+</div>
+
+<script>
+    const form = document.getElementById("emailForm");
+    const generateBtn = document.getElementById("generateBtn");
+    const regenerateBtn = document.getElementById("regenerateBtn");
+    const copyBtn = document.getElementById("copyBtn");
+    const sendBtn = document.getElementById("sendBtn");
+
+    const preview = document.getElementById("emailPreview");
+    const generateMessage = document.getElementById("generateMessage");
+    const sendMessage = document.getElementById("sendMessage");
+
+    const sender = document.getElementById("sender");
+    const recipient = document.getElementById("recipient");
+    const subject = document.getElementById("subject");
+    const information = document.getElementById("information");
+
+    function showMessage(element, message, type = "") {
+        element.textContent = message;
+        element.className = "message " + type;
+    }
+
+    function getEmailData() {
+        return {
+            sender: sender.value.trim(),
+            recipient: recipient.value.trim(),
+            subject: subject.value.trim(),
+            information: information.value.trim()
+        };
+    }
+
+    async function generateEmail() {
+        const data = getEmailData();
+
+        if (!data.sender || !data.recipient ||
+            !data.subject || !data.information) {
+            showMessage(generateMessage,
+                "Please complete all fields first.", "error");
+            return;
+        }
+
+        generateBtn.disabled = true;
+        regenerateBtn.disabled = true;
+
+        showMessage(generateMessage,
+            "XENOX AI is creating your email...");
+
+        try {
+            const response = await fetch("/api/ai/generate-email", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message || result.error ||
+                    "Email generation failed."
+                );
+            }
+
+            if (!result.body) {
+                throw new Error("The server returned an empty email.");
+            }
+
+            preview.textContent = result.body;
+
+            showMessage(generateMessage,
+                "Email generated successfully.", "success");
+
+            showMessage(sendMessage,
+                "Review and edit your email before sending.");
+
+        } catch (error) {
+            showMessage(generateMessage, error.message, "error");
+        } finally {
+            generateBtn.disabled = false;
+            regenerateBtn.disabled = false;
+        }
+    }
+
+    form.addEventListener("submit", async function(event) {
+        event.preventDefault();
+        await generateEmail();
+    });
+
+    regenerateBtn.addEventListener("click", async function() {
+        await generateEmail();
+    });
+
+    copyBtn.addEventListener("click", async function() {
+        const body = preview.innerText.trim();
+
+        if (!body) {
+            showMessage(sendMessage,
+                "Generate an email before copying.", "error");
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(body);
+            showMessage(sendMessage,
+                "Email copied to clipboard.", "success");
+        } catch (error) {
+            showMessage(sendMessage,
+                "Clipboard access was unavailable.", "error");
+        }
+    });
+
+    sendBtn.addEventListener("click", async function() {
+        const body = preview.innerText.trim();
+
+        if (!body) {
+            showMessage(sendMessage,
+                "Generate an email before sending.", "error");
+            return;
+        }
+
+        const data = {
+            sender: sender.value.trim(),
+            recipient: recipient.value.trim(),
+            subject: subject.value.trim(),
+            body: body
+        };
+
+        if (!data.sender || !data.recipient || !data.subject) {
+            showMessage(sendMessage,
+                "Complete the sender, recipient, and subject fields.",
+                "error");
+            return;
+        }
+
+        sendBtn.disabled = true;
+        showMessage(sendMessage,
+            "Connecting to the Gmail sending service...");
+
+        try {
+            const response = await fetch("/api/mail/send", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message || result.error ||
+                    "Gmail sending failed."
+                );
+            }
+
+            showMessage(sendMessage,
+                result.message || "The server accepted the email request.",
+                "success");
+
+        } catch (error) {
+            showMessage(sendMessage, error.message, "error");
+        } finally {
+            sendBtn.disabled = false;
+        }
+    });
+</script>
+</body>
+</html>
